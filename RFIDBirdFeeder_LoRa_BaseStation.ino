@@ -94,7 +94,7 @@ void processPacket(String packet) {
 
   FEEDERSTUB = WiFi.macAddress() + ":" + String(originId);
 
-  if (destinationId == 100) {
+  if (destinationId == RADIOID) {
     // Packet is destined for the base station.
     Serial.println("Executing node request...");
     if (command == 'R') {

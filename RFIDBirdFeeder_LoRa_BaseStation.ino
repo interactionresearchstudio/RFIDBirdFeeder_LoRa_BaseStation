@@ -67,7 +67,6 @@ void setup() {
 void loop() {
   if (lora.available() > 0) {
     char inChar = lora.read();
-    Serial.print(inChar);
     if (inChar == 0x04) {
       processPacket(packet);
       packet = "";
@@ -113,6 +112,9 @@ void processPacket(String packet) {
       sendPowerup();
       replyToNode(originId, destinationId, command, "OK");
     }
+  }
+  else {
+    Serial.println("Received packet for another destination.");
   }
 }
 

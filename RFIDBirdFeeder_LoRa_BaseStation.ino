@@ -32,7 +32,7 @@
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://feedernet.herokuapp.com"
+#define HOST "http://feedernet-staging.herokuapp.com"
 String FEEDERSTUB = " ";
 #define REQUEST_RETRIES 2
 #define WIFI_REGULAR_MAX_RETRIES 600
@@ -97,20 +97,33 @@ void processPacket(String packet) {
     // Packet is destined for the base station.
     Serial.println("Executing node request...");
     if (command == 'R') {
+      // Record track
       postTrack(message);
       replyToNode(originId, destinationId, command, "OK");
     }
     else if (command == 'T') {
+      // Get time
       uint32_t newTime = getTime();
       replyToNode(originId, destinationId, command, String(newTime));
     }
     else if (command == 'P') {
+      // Ping
       sendPing();
       replyToNode(originId, destinationId, command, "OK");
     }
     else if (command == 'U') {
+      // Powerup
       sendPowerup();
       replyToNode(originId, destinationId, command, "OK");
+    }
+    else if (command == 'L') {
+      // Low battery
+      sendLowBattery();
+      replyToNode(originId, destinationId, command, "OK");
+    }
+    else if (command == 'S') {
+      String sunriseSunset = getSunriseSunset();
+      replyToNode(originId, destinationId, command, sunriseSunset);
     }
   }
   else {
@@ -126,7 +139,21 @@ void replyToNode(int destinationId, int originId, char command, String message) 
     command + "," +
     message;
 
+  byte checksum = generateRadioChecksum(payload);
+
+  payload += "," + String(checksum);
+
+  DEBUG_PRINTLN("Replying with payload " + payload);
+
   // Send packet.
   lora.print(payload);
   lora.write(0x04);
+}
+
+byte generateRadioChecksum(String s) {
+  byte checksum = 0;
+  for (int i=0; i<s.length(); i++) {
+    checksum ^= (byte)s.charAt(i);
+  }
+  return checksum;
 }

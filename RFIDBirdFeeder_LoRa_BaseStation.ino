@@ -76,7 +76,10 @@ void loop() {
   }
 
   // Wipe packet buffer on timeout.
-  if (millis() - lastReceive >= PACKET_TIMEOUT) packet = "";
+  if (millis() - lastReceive >= PACKET_TIMEOUT && packet != "") {
+    DEBUG_PRINTLN("Packet timeout. Emptying buffer...");
+    packet = "";
+  }
 }
 
 // Process packet from node
